@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MORTHBLANC AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #1a1a1a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0f0f0;
+    --muted: #666;
+    --muted2: #444;
+    --green: #4ade80;
+    --green-dim: rgba(74,222,128,0.12);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.12);
+    --accent: #e8e0d0;
+    --accent2: #c8b89a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  /* Header */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border2);
+  }
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+  .logo span { color: var(--muted); font-weight: 400; }
+  .last-update {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 5px;
+    font-family: 'Space Mono', monospace;
+  }
+  .refresh-btn {
+    background: none;
+    border: 0.5px solid var(--border2);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .refresh-btn:hover { border-color: var(--accent2); color: var(--accent); }
+
+  /* Balance input */
+  .bal-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+  }
+  .bal-label { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+  .bal-input {
+    background: var(--bg3);
+    border: 0.5px solid var(--border2);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    padding: 7px 12px;
+    border-radius: 4px;
+    width: 120px;
+    outline: none;
+  }
+  .bal-input:focus { border-color: var(--accent2); }
+  .bal-btn {
+    background: none;
+    border: 0.5px solid var(--border2);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .bal-btn:hover { border-color: var(--accent2); color: var(--accent); }
+
+  /* Metrics grid */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .metric {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+  .metric-label {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .metric-value {
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    line-height: 1;
+  }
+  .metric-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 5px;
+    font-family: 'Space Mono', monospace;
+  }
+  .green { color: var(--green) !important; }
+  .red { color: var(--red) !important; }
+
+  /* Cards */
+  .card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+
+  /* Position rows */
+  .prow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 13px;
+  }
+  .prow:last-child { border-bottom: none; }
+  .plabel { color: var(--muted); font-size: 12px; }
+  .pval { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text); }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+  .badge-long { background: rgba(74,222,128,0.12); color: #4ade80; border: 0.5px solid rgba(74,222,128,0.3); }
+  .badge-short { background: rgba(248,113,113,0.12); color: #f87171; border: 0.5px solid rgba(248,113,113,0.3); }
+  .badge-tp { background: rgba(74,222,128,0.12); color: #4ade80; border: 0.5px solid rgba(74,222,128,0.3); }
+  .badge-sl { background: rgba(248,113,113,0.12); color: #f87171; border: 0.5px solid rgba(248,113,113,0.3); }
+  .badge-open { background: rgba(200,184,154,0.12); color: #c8b89a; border: 0.5px solid rgba(200,184,154,0.3); }
+  .badge-timeout { background: rgba(102,102,102,0.2); color: #888; border: 0.5px solid rgba(102,102,102,0.3); }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th {
+    text-align: left;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 8px;
+    border-bottom: 0.5px solid var(--border2);
+    font-weight: 400;
+  }
+  td {
+    padding: 9px 8px;
+    border-bottom: 0.5px solid var(--border);
+    color: var(--text);
+    font-size: 12px;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .mono { font-family: 'Space Mono', monospace; }
+
+  /* Chart */
+  .chart-wrap { position: relative; width: 100%; height: 220px; }
+
+  /* Loading / Error */
+  .loading { text-align: center; padding: 3rem; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.06em; }
+  .error { text-align: center; padding: 2rem; color: var(--red); font-family: 'Space Mono', monospace; font-size: 12px; }
+
+  /* Live dot */
+  .live { display: inline-flex; align-items: center; gap: 6px; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  @media (max-width: 600px) {
+    .two-col { grid-template-columns: 1fr; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">MORTHBLANC<span> AI</span></div>
+    <div class="last-update live">
+      <span class="live-dot"></span>
+      <span id="lastUp">Yükleniyor...</span>
+    </div>
+  </div>
+  <button class="refresh-btn" onclick="loadData()">↻ GÜNCELLE</button>
+</div>
+
+<div class="bal-section">
+  <span class="bal-label">Başlangıç bakiyesi</span>
+  <span style="color:var(--muted);font-family:'Space Mono',monospace;font-size:14px;">$</span>
+  <input class="bal-input" type="number" id="balInput" value="100" min="1" step="1">
+  <button class="bal-btn" onclick="loadData()">UYGULA</button>
+</div>
+
+<div id="main" class="loading">— VERİLER ÇEKİLİYOR —</div>
+
+<script>
+const SHEET = "https://script.google.com/macros/s/AKfycbwrRpCbZwZ0Uczd-VVmdNqnZ3WeV6FDcrrZM6Vwl61Bh8XjWtbhiMkrZyvk_IO9GJcn/exec";
+let chartInst = null;
+
+async function loadData() {
+  document.getElementById('lastUp').textContent = 'Güncelleniyor...';
+  try {
+    const r = await fetch(SHEET + '?t=' + Date.now());
+    const trades = await r.json();
+    if (!trades || trades.length === 0) {
+      document.getElementById('main').innerHTML = '<div class="error">— HENÜz İŞLEM YOK —</div>';
+      return;
+    }
+    render(trades);
+    document.getElementById('lastUp').textContent = new Date().toLocaleString('tr-TR');
+  } catch(e) {
+    document.getElementById('main').innerHTML = '<div class="error">VERİ ÇEKİLEMEDİ: ' + e.message + '</div>';
+  }
+}
+
+function render(trades) {
+  const bal0 = parseFloat(document.getElementById('balInput').value) || 100;
+  const closed = trades.filter(t => t.status === 'TP' || t.status === 'SL' || t.status === 'TIMEOUT');
+  const openTrade = trades.find(t => t.status === 'OPEN');
+
+  const total = closed.length;
+  const wins = closed.filter(t => t.status === 'TP').length;
+  const wr = total > 0 ? ((wins / total) * 100).toFixed(1) : '0.0';
+
+  const rrs = closed.map(t => {
+    const e = parseFloat(t.entry), s = parseFloat(t.sl), p = parseFloat(t.tp);
+    if (!e || !s || !p) return null;
+    const risk = Math.abs(e - s), reward = Math.abs(p - e);
+    return risk > 0 ? reward / risk : null;
+  }).filter(x => x !== null);
+  const avgRR = rrs.length > 0 ? (rrs.reduce((a,b) => a+b, 0) / rrs.length).toFixed(2) : '—';
+
+  let bal = bal0;
+  const balH = [bal0];
+  const balL = ['Start'];
+  closed.forEach((t, i) => {
+    const pnl = parseFloat(t.pnl_pct) || 0;
+    bal = bal * (1 + (pnl * 20) / 100);
+    balH.push(parseFloat(bal.toFixed(2)));
+    balL.push('#' + (i + 1));
+  });
+  const finalBal = balH[balH.length - 1];
+  const totalRet = ((finalBal - bal0) / bal0 * 100).toFixed(1);
+
+  let hoursOpen = '—';
+  if (openTrade && openTrade.timestamp) {
+    const diff = Math.floor((new Date() - new Date(openTrade.timestamp)) / 3600000);
+    hoursOpen = diff + 'h';
+  }
+
+  const lastClosed = closed[closed.length - 1];
+  const lc = finalBal >= bal0 ? '#4ade80' : '#f87171';
+  const fc = finalBal >= bal0 ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)';
+
+  document.getElementById('main').innerHTML = `
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">İşlem</div>
+        <div class="metric-value">${total}</div>
+        <div class="metric-sub">${openTrade ? '1 açık' : 'açık yok'}</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Win rate</div>
+        <div class="metric-value ${parseFloat(wr) >= 50 ? 'green' : 'red'}">${wr}%</div>
+        <div class="metric-sub">${wins}W / ${total - wins}L</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Bakiye</div>
+        <div class="metric-value ${finalBal >= bal0 ? 'green' : 'red'}">$${finalBal.toFixed(2)}</div>
+        <div class="metric-sub ${parseFloat(totalRet) >= 0 ? 'green' : 'red'}">${parseFloat(totalRet) >= 0 ? '+' : ''}${totalRet}%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Ort. R:R</div>
+        <div class="metric-value">${avgRR}</div>
+        <div class="metric-sub">risk / reward</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Son kapalı işlem</div>
+        ${renderTrade(lastClosed)}
+      </div>
+      <div class="card">
+        <div class="card-title">Açık pozisyon</div>
+        ${openTrade ? renderOpen(openTrade, hoursOpen) : '<div style="color:var(--muted);font-size:12px;font-family:Space Mono,monospace;padding:0.5rem 0;">— YOK —</div>'}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Bakiye gelişimi — 20x kaldıraç — $${bal0} başlangıç</div>
+      <div class="chart-wrap">
+        <canvas id="balChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Son işlemler</div>
+      ${renderTable(trades.slice(-15).reverse())}
+    </div>
+  `;
+
+  setTimeout(() => {
+    const ctx = document.getElementById('balChart');
+    if (!ctx) return;
+    if (chartInst) chartInst.destroy();
+    chartInst = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: balL,
+        datasets: [{
+          data: balH,
+          borderColor: lc,
+          backgroundColor: fc,
+          borderWidth: 1.5,
+          fill: true,
+          tension: 0.3,
+          pointRadius: balH.length > 20 ? 0 : 4,
+          pointBackgroundColor: lc,
+          pointBorderColor: 'transparent'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1a1a1a',
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            titleColor: '#888',
+            bodyColor: '#f0f0f0',
+            titleFont: { family: 'Space Mono', size: 10 },
+            bodyFont: { family: 'Space Mono', size: 12 },
+            callbacks: { label: c => '$' + c.parsed.y.toFixed(2) }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#444', font: { family: 'Space Mono', size: 10 } },
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            border: { color: 'rgba(255,255,255,0.08)' }
+          },
+          y: {
+            ticks: { color: '#444', font: { family: 'Space Mono', size: 10 }, callback: v => '$' + v.toFixed(0) },
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            border: { color: 'rgba(255,255,255,0.08)' }
+          }
+        }
+      }
+    });
+  }, 50);
+}
+
+function badge(dir) {
+  dir = (dir||'').toUpperCase();
+  return `<span class="badge badge-${dir.toLowerCase()}">${dir}</span>`;
+}
+function statusBadge(st) {
+  st = (st||'').toUpperCase();
+  const cls = st === 'TP' ? 'tp' : st === 'SL' ? 'sl' : st === 'OPEN' ? 'open' : 'timeout';
+  return `<span class="badge badge-${cls}">${st}</span>`;
+}
+function pnlClass(v) { return parseFloat(v) >= 0 ? 'green' : 'red'; }
+function pnlStr(v) { const n = parseFloat(v)||0; return (n >= 0 ? '+' : '') + n.toFixed(1) + '%'; }
+
+function renderTrade(t) {
+  if (!t) return '<div style="color:var(--muted);font-size:12px;font-family:Space Mono,monospace;">— YOK —</div>';
+  const pnl = parseFloat(t.pnl_20x)||0;
+  return `
+    <div class="prow"><span class="plabel">Yön</span>${badge(t.direction)}</div>
+    <div class="prow"><span class="plabel">Giriş</span><span class="pval">$${parseFloat(t.entry||0).toLocaleString('en-US')}</span></div>
+    <div class="prow"><span class="plabel">SL</span><span class="pval red">$${parseFloat(t.sl||0).toLocaleString('en-US')}</span></div>
+    <div class="prow"><span class="plabel">TP</span><span class="pval green">$${parseFloat(t.tp||0).toLocaleString('en-US')}</span></div>
+    <div class="prow"><span class="plabel">Güven</span><span class="pval">${(parseFloat(t.confidence||0)*100).toFixed(1)}%</span></div>
+    <div class="prow"><span class="plabel">PnL (20x)</span><span class="pval ${pnlClass(pnl)}">${pnlStr(pnl)}</span></div>
+    <div class="prow"><span class="plabel">Sonuç</span>${statusBadge(t.status)}</div>
+  `;
+}
+
+function renderOpen(t, hoursOpen) {
+  return `
+    <div class="prow"><span class="plabel">Yön</span>${badge(t.direction)}</div>
+    <div class="prow"><span class="plabel">Giriş</span><span class="pval">$${parseFloat(t.entry||0).toLocaleString('en-US')}</span></div>
+    <div class="prow"><span class="plabel">SL</span><span class="pval red">$${parseFloat(t.sl||0).toLocaleString('en-US')}</span></div>
+    <div class="prow"><span class="plabel">TP</span><span class="pval green">$${parseFloat(t.tp||0).toLocaleString('en-US')}</span></div>
+    <div class="prow"><span class="plabel">Açık süre</span><span class="badge badge-open">${hoursOpen}</span></div>
+  `;
+}
+
+function renderTable(trades) {
+  if (!trades || trades.length === 0) return '<div style="color:var(--muted);font-size:12px;">Veri yok</div>';
+  const rows = trades.map(t => {
+    const pnl = parseFloat(t.pnl_20x)||0;
+    const ts = t.timestamp ? String(t.timestamp).substring(0,16).replace('T',' ') : '—';
+    return `<tr>
+      <td class="mono" style="color:var(--muted);font-size:11px">${ts}</td>
+      <td>${badge(t.direction)}</td>
+      <td class="mono">$${parseFloat(t.entry||0).toLocaleString('en-US')}</td>
+      <td>${statusBadge(t.status)}</td>
+      <td class="mono ${pnlClass(pnl)}" style="font-weight:500">${pnlStr(pnl)}</td>
+      <td class="mono" style="color:var(--muted)">${t.bars_held||'—'}h</td>
+    </tr>`;
+  }).join('');
+  return `<table>
+    <thead><tr><th>Tarih</th><th>Yön</th><th>Giriş</th><th>Sonuç</th><th>PnL 20x</th><th>Süre</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+loadData();
+</script>
+</body>
+</html>
